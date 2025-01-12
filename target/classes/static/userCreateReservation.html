@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>发起预约申请</title>
+  <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      display: flex;
+      background: url('./images/mainContain.jpg');
+    }
+
+    /* 顶部栏样式 */
+    .topbar {
+      width: 100%;
+      background-color: #ffae42;
+      /* 橙黄色 */
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+      width: 200px;
+      background-color: rgba(240, 181, 108, 0.8);
+      /* 半透明的橙黄色 */
+      color: white;
+      padding: 20px;
+      padding-top: 50px;
+      height: 500vh;
+      /* 使其占满屏幕高度 */
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      /* 垂直居中 */
+      align-items: center;
+      /* 水平居中 */
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 10px;
+      background-color: #d68b41;
+      border-radius: 5px;
+      text-align: center;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      /* 保证链接按钮宽度填满侧边栏 */
+    }
+
+    .sidebar a:hover {
+      background-color: #915515;
+    }
+
+    .add-room-btn:hover {
+      background-color: #d68b41;
+    }
+
+    /* 主体容器样式 */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* 弹窗遮罩层样式 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      /* 增加透明度 */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    /* 弹窗内容样式 */
+    .modal-form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      width: 450px;
+      max-width: 90%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.4s ease-in-out;
+      z-index: 1001;
+    }
+
+    /* 动画效果
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    } */
+
+    /* 弹窗标题样式 */
+    .modal-form h2 {
+      margin-bottom: 25px;
+      font-size: 24px;
+      color: #333;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* 标签样式 */
+    .modal-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    /* 输入框和选择框样式 */
+    .modal-form input,
+    .modal-form select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      color: #333;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* 输入框获取焦点时效果 */
+    .modal-form input:focus,
+    .modal-form select:focus {
+      border-color: #ffae42;
+      box-shadow: 0 0 8px rgba(255, 174, 66, 0.8);
+      outline: none;
+    }
+
+    /* 提交按钮样式 */
+    .modal-form button {
+      width: 100%;
+      padding: 14px;
+      background-color: #ffae42;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    /* 按钮悬停效果 */
+    .modal-form button:hover {
+      background-color: #d68b41;
+      transform: translateY(-2px);
+      /* 按钮微微上升 */
+    }
+
+    /* 按钮点击效果 */
+    .modal-form button:active {
+      transform: translateY(0);
+      /* 点击时恢复 */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <a href="userRoomList.html">所有可用会议室</a>
+    <a href="userList.html">申请列表</a>
+    <a href="userCreateReservation.html">发起预约申请</a>
+  </div>
+
+  <!-- 主体内容 -->
+  <div class="main-content">
+    <!-- 顶部栏 -->
+    <div class="topbar">
+      <h1>会议室预约系统</h1>
+      <span class="welcome"></span>
+    </div>
+    <!-- 弹窗表单 -->
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal-form">
+        <h2>发起预约申请</h2>
+        <form id="reservation-form">
+          <label for="roomId">会议室ID</label>
+          <input type="number" id="roomId" name="roomId" required>
+
+          <label for="userName">用户名</label>
+          <input type="text" id="userName" name="userName" required readonly>
+
+          <label for="startTime">开始时间</label>
+          <select id="startTime" required>
+            <!-- JavaScript动态生成时间选项 -->
+          </select>
+
+          <label for="endTime">结束时间</label>
+          <select id="endTime" required>
+            <!-- JavaScript动态生成时间选项 -->
+          </select>
+
+          <label for="day">日期</label>
+          <input type="date" id="day" name="day" required>
+
+          <label for="persons">参会人数</label>
+          <input type="number" id="persons" name="persons" required>
+
+          <button type="submit">提交申请</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 动态生成小时选项
+    function populateHourOptions(selectElement) {
+      for (let hour = 0; hour < 24; hour++) {
+        const option = document.createElement('option');
+        option.value = `${hour}:00:00`; // 后端接收的时间格式
+        option.textContent = `${hour}:00`;
+        selectElement.appendChild(option);
+      }
+    }
+    // 获取用户名
+    const username = localStorage.getItem('username');
+    if (username) {
+      // 显示欢迎信息
+      document.querySelector('.welcome').textContent = `欢迎，${username}！`;
+
+      // 初始化下拉框
+      const startTimeSelect = document.getElementById('startTime');
+      const endTimeSelect = document.getElementById('endTime');
+      populateHourOptions(startTimeSelect);
+      populateHourOptions(endTimeSelect);
+      // 打开弹窗
+      document.getElementById('modal-overlay').style.display = 'flex';
+
+      // 填充用户名到表单
+      document.getElementById('userName').value = username;
+    } else {
+      // 如果没有用户名，跳转到登录页面或者做其他处理
+      window.location.href = 'index.html';
+    }
+
+
+    // 处理预约表单提交
+    document.getElementById('reservation-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const roomId = document.getElementById('roomId').value;
+      const userName = username;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+      const day = document.getElementById('day').value;
+      const persons = document.getElementById('persons').value;
+
+      const reservationData = {
+        roomId: roomId,
+        userName: userName,
+        startTime: startTime,
+        endTime: endTime,
+        day: day,
+        persons: persons,
+      };
+
+      // 提交到后端接口
+      try {
+        const response = await fetch('/user/createReservation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(reservationData),
+        });
+
+        const result = await response.json();
+        if (result.code === 200) {
+          alert('提交成功！');  // 弹出"提交成功"消息
+          window.location.href = 'userList.html';  // 跳转到 userList.html
+        } else if (result.code === -1) {
+          // 如果后端返回的状态码为-1，弹出后端传来的错误信息
+          alert(result.errMsg);  // 显示后端错误信息
+          window.location.href = 'userList.html';  // 跳转到 userList.html
+        } else {
+          alert('未知错误，请稍后再试。');
+          window.location.href = 'userList.html';  // 跳转到 userList.html
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('预约申请失败，请稍后再试。');
+      }
+    });
+  </script>
+</body>

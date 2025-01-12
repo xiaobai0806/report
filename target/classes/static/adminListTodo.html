@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>申请列表</title>
+  <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      display: flex;
+      background: url('./images/mainContain.jpg');
+    }
+
+    /* 顶部栏样式 */
+    .topbar {
+      width: 100%;
+      background-color: #ffae42;
+      /* 橙黄色 */
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+      width: 200px;
+      background-color: rgba(240, 181, 108, 0.8);
+      /* 半透明的橙黄色 */
+      color: white;
+      padding: 20px;
+      padding-top: 50px;
+      height: 500vh;
+      /* 使其占满屏幕高度 */
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      /* 垂直居中 */
+      align-items: center;
+      /* 水平居中 */
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 10px;
+      background-color: #d68b41;
+      border-radius: 5px;
+      text-align: center;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      /* 保证链接按钮宽度填满侧边栏 */
+    }
+
+    .sidebar a:hover {
+      background-color: #915515;
+    }
+
+    /* 添加会议室按钮样式 */
+    .add-room-btn {
+      padding: 12px 20px;
+      background-color: #ffae42;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+      /* 与其他元素之间增加间距 */
+      transition: background-color 0.3s ease;
+      width: 100%;
+      /* 保证按钮宽度填满侧边栏 */
+    }
+
+    .add-room-btn:hover {
+      background-color: #d68b41;
+    }
+
+    /* 主体容器样式 */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* 表格样式 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #ffae42;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(245, 207, 102, 0.4);
+    }
+
+    tr:hover {
+      background-color: rgba(250, 197, 90, 0.4);
+    }
+
+    /* 表格字体样式 */
+    td,
+    th {
+      font-size: 14px;
+    }
+
+    .status-approved {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      color: orange;
+      font-weight: bold;
+    }
+
+    .status-rejected {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* 操作按钮样式 */
+    .details-btn {
+      padding: 8px 16px;
+      background-color: rgba(255, 174, 66, 0.7);
+      /* 橘黄色透明背景 */
+      color: white;
+      border: 1px solid rgba(255, 174, 66, 0.8);
+      /* 边框颜色稍深 */
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .details-btn:hover {
+      background-color: rgba(255, 174, 66, 1);
+      /* 橘黄色变为不透明 */
+      border-color: rgba(255, 174, 66, 1);
+      /* 边框颜色加深 */
+      transform: translateY(-2px);
+      /* 悬停时按钮上升 */
+    }
+
+    .details-btn:active {
+      transform: translateY(0);
+      /* 点击时恢复 */
+    }
+
+    /* 弹窗遮罩 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      /* 半透明黑色背景 */
+      z-index: 9999;
+      /* 确保弹窗在最上层 */
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+      /* 背景模糊效果 */
+    }
+
+    /* 弹窗遮罩层 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      /* 半透明背景 */
+      z-index: 9999;
+      /* 确保弹窗在最上层 */
+      justify-content: center;
+      /* 水平居中 */
+      align-items: center;
+      /* 垂直居中 */
+      backdrop-filter: blur(5px);
+      /* 背景模糊效果 */
+    }
+
+    /* 弹窗内容 */
+    .modal-form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      width: 400px;
+      max-width: 90%;
+      /* 屏幕过小时自适应 */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      text-align: left;
+      transform: translate(-50%, -50%);
+      /* 确保居中 */
+      position: relative;
+      top: 50%;
+      left: 50%;
+    }
+
+    /* 标题样式 */
+    .modal-form h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* 弹窗覆盖层 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    /* 弹窗内容 */
+    .modal-form {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px 30px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      font-family: Arial, sans-serif;
+    }
+
+    /* 标题样式 */
+    .modal-form h2 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* 每行信息样式 */
+    .modal-form div {
+      margin-bottom: 15px;
+    }
+
+    /* 信息标题 */
+    .modal-form strong {
+      font-size: 14px;
+      color: #555;
+      display: inline-block;
+      width: 120px;
+      font-weight: 500;
+    }
+
+    /* 信息内容 */
+    .modal-form span {
+      font-size: 14px;
+      color: #333;
+      display: inline-block;
+      margin-left: 10px;
+      font-weight: 400;
+    }
+
+    /* 驳回原因字段 */
+    .modal-form .modal-reason {
+      color: #ff6666;
+      /* 红色用于提示 */
+    }
+
+    /* 审批操作区域 */
+    .modal-form .approval-actions label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .modal-form .approval-actions select,
+    .modal-form .approval-actions textarea {
+      width: 100%;
+      font-size: 14px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    .modal-form .approval-actions textarea {
+      resize: none;
+      height: 80px;
+    }
+
+    /* 按钮组 */
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .button-group button {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    .approve-btn {
+      background-color: #4caf50;
+      /* 绿色背景 */
+      color: white;
+    }
+
+    .approve-btn:hover {
+      background-color: #45a049;
+      /* 深绿色 */
+    }
+
+    .close {
+      background-color: #ff6666;
+      /* 红色背景 */
+      color: white;
+    }
+
+    .close:hover {
+      background-color: #d65555;
+      /* 深红色 */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <a href="adminRoomList.html">所有会议室</a>
+    <a href="adminListTodo.html">申请列表</a>
+    <a href="adminListDone.html">审批记录</a>
+  </div>
+
+  <!-- 主体内容 -->
+  <div class="main-content">
+    <!-- 顶部栏 -->
+    <div class="topbar">
+      <h1>会议室预约系统</h1>
+      <span class="welcome">欢迎，管理员！</span>
+    </div>
+
+    <!-- 申请列表表格 -->
+    <div class="container">
+      <table id="reservation-table">
+        <thead>
+          <tr>
+            <th>预约ID</th>
+            <th>会议室ID</th>
+            <th>预约人</th>
+            <th>预约日期</th>
+            <th>审批状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="reservation-list">
+          <!-- 动态数据将在此插入 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="details-modal" style="display: none;">
+    <div class="modal-form">
+      <h2>预约详情</h2>
+      <div>
+        <strong>会议室名称:</strong> <span class="modal-title"></span>
+      </div>
+      <div>
+        <strong>开始时间:</strong> <span class="modal-start-time"></span>
+      </div>
+      <div>
+        <strong>结束时间:</strong> <span class="modal-end-time"></span>
+      </div>
+      <div>
+        <strong>预约日期:</strong> <span class="modal-day"></span>
+      </div>
+      <div>
+        <strong>参会人数:</strong> <span class="modal-persons"></span>
+      </div>
+      <div>
+        <strong>审批状态:</strong> <span class="modal-status"></span>
+      </div>
+      <div>
+        <strong>审批时间:</strong> <span class="modal-approval-time"></span>
+      </div>
+      <div>
+        <strong>驳回原因:</strong> <span class="modal-reason"></span>
+      </div>
+      <div class="approval-actions">
+        <label>
+          审批结果:
+          <select id="approval-result" onchange="toggleReasonField()">
+            <option value="0">请选择</option>
+            <option value="1">通过</option>
+            <option value="2">驳回</option>
+          </select>
+        </label>
+        <div id="reason-container" style="display: none;">
+          <label>
+            理由:
+            <textarea id="approval-reason" placeholder="仅填写在驳回时"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="approve-btn">提交审批</button>
+        <button class="close" onclick="closeModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    let currentReservationId; // 全局变量，用于存储当前的预约ID
+    // 切换理由文本框的显示与隐藏
+    function toggleReasonField() {
+      const approvalResult = document.getElementById('approval-result').value;
+      const reasonContainer = document.getElementById('reason-container');
+
+      if (approvalResult === '2') {
+        // 选择驳回时显示理由文本框
+        reasonContainer.style.display = 'block';
+      } else {
+        // 否则隐藏理由文本框
+        reasonContainer.style.display = 'none';
+      }
+    }
+
+    // 关闭弹窗函数
+    function closeModal() {
+      document.getElementById('details-modal').style.display = 'none';
+    }
+    // 获取用户名
+    const username = localStorage.getItem('username');
+    if (username) {
+      // 显示欢迎信息
+      document.querySelector('.welcome').textContent = `欢迎，${username}！`;
+
+      // 从后端获取所有预约记录
+      fetch('/admin/selectAllReservations')
+        .then(response => response.json())
+        .then(data => {
+          const reservations = data.data;  // 假设返回的数据包含在data.data里
+          const reservationList = document.getElementById('reservation-list');
+
+          // 过滤出未审批（isPass == 0）的预约记录
+          const pendingReservations = reservations.filter(reservation => reservation.isPass === 0);
+
+          // 动态生成表格行
+          pendingReservations.forEach(reservation => {
+            const row = document.createElement('tr');
+            const statusText = reservation.isPass === 0 ? '待审批' : '';
+
+            row.innerHTML = `
+            <td>${reservation.reservationId}</td>
+            <td>${reservation.roomId}</td>
+            <td>${reservation.userName}</td>
+            <td>${reservation.day}</td>
+            <td class="status-pending">${statusText}</td>
+            <td><button class="details-btn">审批 ></button></td>
+          `;
+
+            reservationList.appendChild(row);
+
+            document.querySelector('.approve-btn').addEventListener('click', async () => {
+              const resultSelect = document.getElementById('approval-result');
+              const reasonTextarea = document.getElementById('approval-reason');
+              const approvalResult = parseInt(resultSelect.value, 10);
+              const reason = reasonTextarea.value.trim();
+
+              if (approvalResult === 0) {
+                alert('请选择审批结果');
+                return;
+              }
+              if (approvalResult === 2 && !reason) {
+                alert('驳回时必须填写理由');
+                return;
+              }
+              if (approvalResult === 1 && reason) {
+                alert('审批通过时不能填写理由');
+                return;
+              }
+
+              try {
+                if (!currentReservationId) {
+                  alert('当前预约ID未定义，无法提交审批');
+                  return;
+                }
+
+                const payload = {
+                  reservationId: currentReservationId,
+                  isPass: approvalResult,
+                  reason: reason || null, // 确保空字符串转为 null
+                };
+
+                const response = await fetch('/admin/InsertApprove', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(payload),
+                });
+
+                const result = await response.json();
+                if (result.code === 200) {
+                  alert(result.errMsg);
+                  closeModal();
+                  window.location.href = "adminListTodo.html"; // 修正跳转逻辑
+                } else {
+                  alert(result.message || '审批提交失败');
+                }
+              } catch (error) {
+                console.error('审批提交失败:', error);
+                alert('提交失败，请稍后重试');
+              }
+            });
+
+
+            // 为审批按钮添加点击事件
+            const detailsButton = row.querySelector('.details-btn');
+            detailsButton.addEventListener('click', async () => {
+              const reservationId = reservation.reservationId;
+              currentReservationId = reservationId; // 存储到全局变量
+              const userName = reservation.userName;
+              const roomId = reservation.roomId;
+
+              // 向后端请求获取详细信息
+              try {
+                const response = await fetch(`/admin/selectReservationByParams?reservationId=${reservationId}&userName=${encodeURIComponent(userName)}&roomId=${roomId}`);
+                const result = await response.json();
+
+                if (result.code === 200 && result.data && result.data.length > 0) {
+                  // 展示弹窗并填充数据
+                  const reservationDetail = result.data[0]; // 获取数组中的第一个对象
+
+                  // 设置弹窗数据
+                  document.querySelector('.modal-title').textContent = reservationDetail.title;
+                  document.querySelector('.modal-start-time').textContent = reservationDetail.startTime;
+                  document.querySelector('.modal-end-time').textContent = reservationDetail.endTime;
+                  document.querySelector('.modal-day').textContent = reservationDetail.day;
+                  document.querySelector('.modal-persons').textContent = reservationDetail.persons;
+                  document.querySelector('.modal-status').textContent = reservationDetail.isPass === 0 ? '待审批' : '已审批';
+                  document.querySelector('.modal-approval-time').textContent = reservationDetail.approvalTime || '尚未审批';
+                  document.querySelector('.modal-reason').textContent = reservationDetail.reason || '无';
+
+                  // 显示弹窗
+                  document.getElementById('details-modal').style.display = 'block';
+                } else {
+                  alert(result.message || '获取详情失败');
+                }
+              } catch (error) {
+                console.error('请求详情失败:', error);
+                alert('获取详情失败，请稍后再试');
+              }
+            });
+          });
+        })
+
+        .catch(error => {
+          console.error('获取数据失败:', error);
+        });
+    } else {
+      // 如果没有用户名，跳转到登录页面或者做其他处理
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>

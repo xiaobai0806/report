@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--注意修改这里的路径为自己有注解sql的类-->
+<mapper namespace="com.sjx.a_p.mapper.MeetingMapper">
+    <!--实现update标签-->
+    <update id="updateMeeting">
+        update meeting_room_info
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="area != null">
+                area = #{area},
+            </if>
+            <if test="persons != null">
+                persons = #{persons},
+            </if>
+            <if test="photoUrl != null">
+                photo_url = #{photoUrl}
+            </if>
+            <if test="isAvailable != null">
+                is_available = #{isAvailable},
+            </if>
+        </set>
+        where room_id = #{roomId}
+    </update>
+</mapper>

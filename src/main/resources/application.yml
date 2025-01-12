@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    # ??mysql????????????????????127.0.0.1
+    url: jdbc:mysql://127.0.0.1:3306/a_pratical?characterEncoding=utf8&useSSL=false
+    username: root
+    password: wang258036
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      location: D:\A-pTmp # 设置临时文件存放目录
+  web:
+    resources:
+      static-locations:
+        - classpath:/static/   # 默认静态资源路径
+        - file:uploadRoomImage/ # 自定义静态资源路径
+
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true # ???????????????user_id ? java???userId
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # ??sql
+  # ??sql?????:
+  mapper-locations: classpath:mapper/**Mapper.xml # ??mapper??resources??????mapper?????????xml
+# ??????????
+logging:
+  file:
+    name: spring-a_p.log

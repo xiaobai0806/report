@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>所有可用会议室</title>
+  <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      display: flex;
+      background: url('./images/mainContain.jpg');
+    }
+
+    /* 顶部栏样式 */
+    .topbar {
+      width: 100%;
+      background-color: #ffae42;
+      /* 橙黄色 */
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+      width: 200px;
+      background-color: rgba(240, 181, 108, 0.8);
+      /* 半透明的橙黄色 */
+      color: white;
+      padding: 20px;
+      padding-top: 50px;
+      height: 500vh;
+      /* 使其占满屏幕高度 */
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      /* 垂直居中 */
+      align-items: center;
+      /* 水平居中 */
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 10px;
+      background-color: #d68b41;
+      border-radius: 5px;
+      text-align: center;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      /* 保证链接按钮宽度填满侧边栏 */
+    }
+
+    .sidebar a:hover {
+      background-color: #915515;
+    }
+
+
+    /* 主体容器样式 */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .room-card {
+      background-color: #fff8dc;
+      border: 1px solid #d3d3d3;
+      border-radius: 8px;
+      width: 200px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .room-card:hover {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .room-card img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+
+    .room-details {
+      margin-top: 10px;
+    }
+
+    /* 控制图片的大小和宽度 */
+    .room-photo {
+      width: 150px;
+      /* 设置图片宽度为固定大小 */
+      height: 150px;
+      /* 设置图片高度为固定大小 */
+      object-fit: cover;
+      /* 保持图片的宽高比例，同时填充容器 */
+      border-radius: 8px;
+      /* 如果需要圆角效果，可以加上这行 */
+    }
+
+    .status {
+      font-weight: bold;
+      color: green;
+    }
+
+    .status.unavailable {
+      color: red;
+    }
+
+    /* 弹出层背景 */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    /* 弹出表单 */
+    .popup-form {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      z-index: 1001;
+      width: 400px;
+      max-width: 90%;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    /* 表单输入框和选择框 */
+    .popup-form input,
+    .popup-form select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .popup-form input:focus,
+    .popup-form select:focus {
+      border-color: #ffae42;
+      outline: none;
+    }
+
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <a href="userRoomList.html">所有可用会议室</a>
+    <a href="userSelectRoom.html">筛选特定会议室</a>
+    <a href="userList.html">申请列表</a>
+  </div>
+
+  <!-- 主体内容 -->
+  <div class="main-content">
+    <div class="topbar">
+      <h1>会议室预约系统</h1>
+      <span class="welcome"></span>
+    </div>
+    <div class="container" id="room-list">
+      <!-- 动态生成的会议室信息框将插入到这里 -->
+    </div>
+  </div>
+
+  <!-- 弹出表单 -->
+  <div class="popup-overlay" id="popup-overlay"></div>
+  <div class="popup-form" id="popup-form">
+    <h2>查看会议室信息</h2>
+    <form id="edit-room-form">
+      <input type="text" id="room-id" placeholder="会议室ID" readonly>
+      <input type="text" id="room-title" placeholder="会议室名称" readonly>
+      <input type="number" id="room-area" placeholder="面积（平方米）" readonly>
+      <input type="number" id="room-persons" placeholder="参会人数" readonly>
+    </form>
+  </div>
+
+  <script>
+    // 获取用户名
+    const username = localStorage.getItem('username');
+
+    if (username) {
+      document.querySelector('.welcome').textContent = `欢迎，${username}！`;
+
+      // 获取会议室数据并渲染
+      async function fetchRooms() {
+        try {
+          const response = await fetch('/admin/allRoom'); // 替换为后端实际接口地址
+          const result = await response.json();
+
+          if (result.code === 200) {
+            const rooms = result.data;
+
+            // 只显示可用的会议室
+            const availableRooms = rooms.filter(room => room.isAvailable === 1);
+            renderRooms(availableRooms);
+          } else {
+            alert('获取会议室信息失败: ' + result.errMsg);
+          }
+        } catch (error) {
+          console.error('请求会议室数据失败:', error);
+          alert('请求会议室数据失败，请稍后重试');
+        }
+      }
+
+      function renderRooms(rooms) {
+        const roomListContainer = document.getElementById('room-list');
+        roomListContainer.innerHTML = ''; // 清空旧内容
+
+        rooms.forEach((room) => {
+          const roomCard = document.createElement('div');
+          roomCard.className = 'room-card';
+          roomCard.dataset.roomId = room.roomId; // 使用 data- 属性存储 roomId
+
+          roomCard.innerHTML = `
+            <img src="${room.photoUrl}" class="room-photo">
+            <div class="room-details">
+              <p>会议室ID: ${room.roomId}</p>
+              <p>会议室名称: ${room.title}</p>
+              <p>面积: ${room.area} 平方米</p>
+              <p>参会人数: ${room.persons}</p>
+              <p class="status ${room.isAvailable === 2 ? 'unavailable' : ''}">
+                ${room.isAvailable === 1 ? '可用' : '不可用'}
+              </p>
+            </div>
+          `;
+
+          // 为每个会议室卡片添加点击事件
+          roomCard.addEventListener('click', function () {
+            openEditForm(roomCard.dataset.roomId);  // 修正为 openEditForm
+          });
+
+          roomListContainer.appendChild(roomCard);
+        });
+      }
+
+      // 显示会议室信息
+      async function openEditForm(roomId) {
+        try {
+          const url = `/admin/selectRoomByRoomId?roomId=${encodeURIComponent(roomId)}`;
+          const response = await fetch(url);
+          const result = await response.json();
+
+          if (result.code === 200) {
+            const room = result.data;
+            document.getElementById('room-id').value = room.roomId;
+            document.getElementById('room-title').value = room.title;
+            document.getElementById('room-area').value = room.area;
+            document.getElementById('room-persons').value = room.persons;
+
+            // 显示弹出层
+            document.getElementById('popup-overlay').style.display = 'block';
+            document.getElementById('popup-form').style.display = 'block';
+          } else {
+            alert(result.errMsg);
+          }
+        } catch (error) {
+          console.error('获取会议室信息失败:', error);
+          alert('获取会议室信息失败，请稍后重试');
+        }
+      }
+
+      // 点击背景区域关闭弹出表单
+      document.getElementById('popup-overlay').addEventListener('click', () => {
+        document.getElementById('popup-overlay').style.display = 'none';
+        document.getElementById('popup-form').style.display = 'none';
+      });
+
+      // 页面加载时获取会议室数据
+      window.onload = fetchRooms;
+    } else {
+      // 如果没有用户名，跳转到登录页面或者做其他处理
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+
+
+</body>
+
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>筛选可用会议室</title>
+  <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      display: flex;
+      background: url('./images/mainContain.jpg');
+    }
+
+    /* 顶部栏样式 */
+    .topbar {
+      width: 100%;
+      background-color: #ffae42;
+      /* 橙黄色 */
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    /* 侧边栏样式 */
+    .sidebar {
+      width: 200px;
+      background-color: rgba(240, 181, 108, 0.8);
+      /* 半透明的橙黄色 */
+      color: white;
+      padding: 20px;
+      padding-top: 50px;
+      height: 500vh;
+      /* 使其占满屏幕高度 */
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      /* 垂直居中 */
+      align-items: center;
+      /* 水平居中 */
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 10px;
+      background-color: #d68b41;
+      border-radius: 5px;
+      text-align: center;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      /* 保证链接按钮宽度填满侧边栏 */
+    }
+
+    .sidebar a:hover {
+      background-color: #915515;
+    }
+
+
+    /* 主体容器样式 */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .room-card {
+      background-color: #fff8dc;
+      border: 1px solid #d3d3d3;
+      border-radius: 8px;
+      width: 200px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .room-card:hover {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .room-card img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+
+    .room-details {
+      margin-top: 10px;
+    }
+
+    /* 控制图片的大小和宽度 */
+    .room-photo {
+      width: 150px;
+      /* 设置图片宽度为固定大小 */
+      height: 150px;
+      /* 设置图片高度为固定大小 */
+      object-fit: cover;
+      /* 保持图片的宽高比例，同时填充容器 */
+      border-radius: 8px;
+      /* 如果需要圆角效果，可以加上这行 */
+    }
+
+    .status {
+      font-weight: bold;
+      color: green;
+    }
+
+    .status.unavailable {
+      color: red;
+    }
+
+    /* 弹出层背景 */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    /* 弹出表单 */
+    .popup-form {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      z-index: 1001;
+      width: 400px;
+      max-width: 90%;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    /* 表单输入框和选择框 */
+    .popup-form input,
+    .popup-form select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .popup-form input:focus,
+    .popup-form select:focus {
+      border-color: #ffae42;
+      outline: none;
+    }
+
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    /* 按钮样式 */
+    .popup-form button {
+      background-color: #ffae42;
+      /* 橙黄色，与顶部栏颜色一致 */
+      color: white;
+      /* 白色字体 */
+      border: none;
+      /* 去掉默认边框 */
+      border-radius: 8px;
+      /* 圆角 */
+      padding: 12px 20px;
+      /* 内边距，增大点击区域 */
+      font-size: 16px;
+      /* 字体大小 */
+      font-weight: bold;
+      /* 字体加粗 */
+      cursor: pointer;
+      /* 鼠标样式 */
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      /* 动画效果 */
+      display: block;
+      /* 独占一行 */
+      margin: 20px auto 0;
+      /* 居中 */
+      width: 100%;
+      /* 占满表单宽度 */
+    }
+
+    /* 悬停和点击效果 */
+    .popup-form button:hover {
+      background-color: #d68b41;
+      /* 深一点的橙色 */
+    }
+
+    .popup-form button:active {
+      transform: scale(0.98);
+      /* 按下按钮时稍微缩小 */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <a href="userRoomList.html">所有可用会议室</a>
+    <a href="userSelectRoom.html">筛选特定会议室</a>
+    <a href="userList.html">申请列表</a>
+  </div>
+
+  <!-- 主体内容 -->
+  <div class="main-content">
+    <div class="topbar">
+      <h1>会议室预约系统</h1>
+      <span class="welcome"></span>
+    </div>
+    <div class="container" id="room-list">
+      <!-- 动态生成的会议室信息框将插入到这里 -->
+    </div>
+  </div>
+
+  <!-- 弹出表单：筛选会议室 -->
+  <div class="popup-overlay" id="popup-overlay"></div>
+  <div class="popup-form" id="popup-form">
+    <h2>筛选可用会议室</h2>
+    <form id="filter-form">
+      <label for="persons">参会人数:</label>
+      <input type="number" id="persons" placeholder="请输入参会人数" required>
+
+      <label for="day">日期:</label>
+      <input type="date" id="day" required>
+
+      <label for="startTime">开始时间:</label>
+      <select id="startTime" required>
+        <!-- JavaScript动态生成时间选项 -->
+      </select>
+
+      <label for="endTime">结束时间:</label>
+      <select id="endTime" required>
+        <!-- JavaScript动态生成时间选项 -->
+      </select>
+
+      <button type="submit">筛选</button>
+    </form>
+  </div>
+
+  <script>
+    // 获取用户名
+    const username = localStorage.getItem('username');
+
+    if (username) {
+      document.querySelector('.welcome').textContent = `欢迎，${username}！`;
+
+      // 动态生成小时选项
+      function populateHourOptions(selectElement) {
+        for (let hour = 0; hour < 24; hour++) {
+          const option = document.createElement('option');
+          option.value = `${hour}:00:00`; // 后端接收的时间格式
+          option.textContent = `${hour}:00`;
+          selectElement.appendChild(option);
+        }
+      }
+
+      // 页面加载时初始化下拉框
+      window.onload = () => {
+        const startTimeSelect = document.getElementById('startTime');
+        const endTimeSelect = document.getElementById('endTime');
+        populateHourOptions(startTimeSelect);
+        populateHourOptions(endTimeSelect);
+
+        // 显示弹出表单
+        document.getElementById('popup-overlay').style.display = 'block';
+        document.getElementById('popup-form').style.display = 'block';
+      };
+
+      document.getElementById('filter-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const persons = document.getElementById('persons').value.trim();
+        const day = document.getElementById('day').value.trim();
+        const startTime = document.getElementById('startTime').value.trim();
+        const endTime = document.getElementById('endTime').value.trim();
+
+        console.log('输入数据:', { persons, day, startTime, endTime });
+
+        if (!persons || !day || !startTime || !endTime) {
+          alert('请输入完整信息');
+          return;
+        }
+
+        // 转换数据为后端需要的格式
+        const requestData = {
+          persons: parseInt(persons),
+          day: day,
+          startTime: startTime,
+          endTime: endTime,
+        };
+
+        console.log('发送到后端的数据:', requestData);
+
+        // 发送请求到后端接口
+        try {
+          const response = await fetch('/user/selectAvailableRoomList', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData),
+          });
+          const result = await response.json();
+
+          console.log('后端响应:', result);
+
+          if (result.code === 200) {
+            const rooms = result.data;
+            renderRooms(rooms);
+            // 关闭筛选表单
+            document.getElementById('popup-overlay').style.display = 'none';
+            document.getElementById('popup-form').style.display = 'none';
+          } else {
+            alert(result.errMsg);
+          }
+        } catch (error) {
+          console.error('获取会议室信息失败:', error);
+          alert('获取会议室信息失败，请稍后重试');
+        }
+      });
+
+
+      // 渲染会议室
+      function renderRooms(rooms) {
+        const roomListContainer = document.getElementById('room-list');
+        roomListContainer.innerHTML = ''; // 清空旧内容
+
+        rooms.forEach((room) => {
+          const roomCard = document.createElement('div');
+          roomCard.className = 'room-card';
+          roomCard.dataset.roomId = room.roomId; // 使用 data- 属性存储 roomId
+
+          roomCard.innerHTML = `
+            <img src="${room.photoUrl}" class="room-photo">
+            <div class="room-details">
+              <p>会议室ID: ${room.roomId}</p>
+              <p>会议室名称: ${room.title}</p>
+              <p>面积: ${room.area} 平方米</p>
+              <p>参会人数: ${room.persons}</p>
+              <p class="status ${room.isAvailable === 2 ? 'unavailable' : ''}">
+                ${room.isAvailable === 1 ? '可用' : '不可用'}
+              </p>
+            </div>
+          `;
+
+          roomListContainer.appendChild(roomCard);
+        });
+      }
+    } else {
+      // 如果没有用户名，跳转到登录页面或者做其他处理
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+
+</html>
